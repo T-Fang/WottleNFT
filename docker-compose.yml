@@ -1,0 +1,116 @@
+version: "3.5"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - TESTNET_API=$TESTNET_API
+        - MAINNET_API=$MAINNET_API
+        - PROFILE_API=$PROFILE_API
+    ports:
+      - 3000:3000
+    environment:
+      - PINATA_API_KEY=$PINATA_API_KEY
+      - PINATA_SECRET=$PINATA_SECRET
+    restart: on-failure
+  backend:
+    build:
+      context: ./backend
+    volumes:
+      - $MARKETPLACE_PRIVATE_KEY_DIRECTORY:/marketplace
+    ports:
+      - 3001:3001
+    environment:
+      - PORT=3001
+      - IS_TESTNET=$IS_TESTNET
+      - SUBMIT_API_BASE_URL=http://cardano-submit-api:8090
+      - NFT_BECH32_TAXATION_ADDRESS=$NFT_BECH32_TAXATION_ADDRESS
+      - DATABASE_URL=$DATABASE_URL
+      - MARKETPLACE_PRIVATE_KEY_FILE=/marketplace/marketplace.skey
+      - MARKETPLACE_REVENUE_ADDRESS=addr1qytsgcswfrr92mzttxust6a9tdsn7uc3cdduwx2f0jm3tgmvxt62vf2zhyxjrfyhed97qk757ewzxyvvzet3e8vxhh8st0y7e7
+      - CLIMATE_ACTION_ADDRESS=addr1q89rhz0zl45yjnaaa8nl0vhmymc9v4rak9ram8xs43lq8w4d6j6rt6ckvgefywd77hhnqgkm4s4wvdqllguzprkmy4wqveep2v
+      - ZERO_HUNGER_ADDRESS=addr1q89rhz0zl45yjnaaa8nl0vhmymc9v4rak9ram8xs43lq8w4d6j6rt6ckvgefywd77hhnqgkm4s4wvdqllguzprkmy4wqveep2v
+      - QUALITY_EDUCATION_ADDRESS=addr1qyejyjgh979q2hh7p0dspzvytkqvnddg4np4utf93eykdsa6tl3wfrn2283m8yqwydt4zrgupen2lnnaxdrqtvzvffkq3z4y36
+
+    restart: on-failure
+  profile-backend:
+    build:
+      context: ./profilebackend
+    ports:
+      - 3002:3002
+    environment:
+      - PORT=3002
+      - TOKEN_SECRET=$TOKEN_SECRET
+      - DBHOST=postgres
+      - DBUSER=$DBUSER
+      - DBPASSWORD=$DBPASSWORD
+  postgres:
+    image: postgres:11.5-alpine
+    environment:
+      - POSTGRES_LOGGING=true
+      - POSTGRES_DB_FILE=/run/secrets/postgres_db
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+    secrets:
+      - postgres_password
+      - postgres_user
+      - postgres_db
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: on-failure
+
+  cardano-node:
+    image: inputoutput/cardano-node:1.30.1
+    environment:
+      - NETWORK=${NETWORK:-mainnet}
+    volumes:
+      - ./db:/data/db
+      - node-ipc:/ipc
+    restart: on-failure
+
+  cardano-submit-api:
+    image: inputoutput/cardano-submit-api:1.30.0
+    environment:
+      - NETWORK=${NETWORK:-mainnet}
+    volumes:
+      - node-ipc:/node-ipc
+    ports:
+      - 8090:8090
+    restart: on-failure
+  cardano-db-sync:
+    image: inputoutput/cardano-db-sync:11.0.4
+    environment:
+      - NETWORK=${NETWORK:-mainnet}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - RESTORE_SNAPSHOT=${RESTORE_SNAPSHOT:-}
+      - RESTORE_RECREATE_DB=N
+    depends_on:
+      - cardano-node
+      - postgres
+    secrets:
+      - postgres_password
+      - postgres_user
+      - postgres_db
+    volumes:
+      - db-sync-tmp:/tmp
+      - db-sync-data:/var/lib/cdbsync
+      - node-ipc:/node-ipc
+    restart: on-failure
+
+volumes:
+  node-ipc:
+  postgres:
+  db-sync-data:
+  db-sync-tmp:
+
+secrets:
+  postgres_db:
+    file: ./config/secrets/postgres_db
+  postgres_password:
+    file: ./config/secrets/postgres_password
+  postgres_user:
+    file: ./config/secrets/postgres_user

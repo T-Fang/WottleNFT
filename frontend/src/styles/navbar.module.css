@@ -1,0 +1,53 @@
+.container {
+  display: flex;
+  align-items: center;
+}
+
+.container a {
+  position: relative;
+  padding: 5px 5px 5px 5px;
+  color: black;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none !important;
+  border: none;
+	white-space: nowrap;
+  @apply mx-1 xl:mx-4;
+}
+
+.container a:before,
+.container a:after {
+  position: absolute;
+  opacity: 0;
+  width: 0%;
+  height: 2px;
+  content: "";
+  background: black;
+  transition: all 0.3s;
+}
+
+.container a:before {
+  bottom: 0px;
+  right: 50%;
+}
+
+.container a:after {
+  bottom: 0px;
+  left: 50%;
+}
+
+.container a:hover:before,
+.container a:hover:after {
+  opacity: 1;
+  width: 40%;
+}
+
+.selected:before,
+.selected:after {
+  position: absolute;
+  opacity: 1 !important;
+  width: 40% !important;
+  height: 2px;
+  content: "";
+  background: black;
+}
