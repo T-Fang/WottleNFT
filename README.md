@@ -1,10 +1,14 @@
 # WottleNFT
 
-WottleNFT is a sustainable NFT Marketplace built on the Cardano Blockchain
+![WottleNFT](https://user-images.githubusercontent.com/61874388/142764258-557fed13-5796-406d-ac2c-ed25e86ffe94.gif)
+
+**WottleNFT is a sustainable NFT Marketplace built on the Cardano Blockchain**
 
 Project Homepage URL: https://wottlenft.io
 
 Promotional Video URL: https://youtu.be/8s6AXX16T6Q
+
+![WottleNFT-Poster](https://user-images.githubusercontent.com/61874388/142764335-cb322cb9-9992-4d1e-80dd-cf3b86161762.png)
 
 ## Our Story
 
